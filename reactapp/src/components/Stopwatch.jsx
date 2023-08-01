@@ -1,5 +1,7 @@
 // Stopwatch.js
-import React, { useState, useEffect, useRef } from 'react';
+
+import React, { useState, useRef, useEffect } from 'react';
+
 
 const Stopwatch = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -42,19 +44,25 @@ const Stopwatch = () => {
   };
 
   return (
-    <div>
-      <div data-testid="time">{formatTime(elapsedTime)}</div>
-      {!isRunning && (
-        <button data-testid="start" onClick={handleStart}>
+    <div className="stopwatch">
+      <p id="time" data-testid="time">
+        {formatTime(elapsedTime)}
+      </p>
+      {isRunning ? (
+        <button id="pause" data-testid="pause" onClick={handlePause}>
+          Pause
+        </button>
+      ) : (
+        <button id="start" data-testid="start" onClick={handleStart}>
           Start
         </button>
       )}
-      {isRunning && (
-        <button data-testid="pause" onClick={handlePause}>
-          Pause
-        </button>
-      )}
-      <button data-testid="reset" onClick={handleReset} disabled={!elapsedTime}>
+      <button
+        id="reset"
+        data-testid="reset"
+        onClick={handleReset}
+        disabled={!elapsedTime}
+      >
         Reset
       </button>
     </div>
