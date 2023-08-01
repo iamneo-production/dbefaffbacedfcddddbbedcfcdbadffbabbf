@@ -1,71 +1,69 @@
+import React, { useState, useEffect, useRef } from 'react';
+import './Stopwatch.css';
+import { act } from '@testing-library/react';
 
-import React, { useState, useRef, useEffect } from 'react';
 
+function Stopwatch() {
+    const [time, setTime] = useState(0);
+    const intervalRef = useRef(null);
+    const [isRunning, setIsRunning] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
+    const [isResetDisabled, setIsResetDisabled] = useState(true);
 
-const Stopwatch = () => {
-  const [isRunning, setIsRunning] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const intervalRef = useRef(null);
+    useEffect(() => {
+        if (isRunning) {
+            intervalRef.current = setInterval(() => {
+                act(() => {
+                  setTime(prevTime => prevTime + 1);
+                });
+            }, 1000);
+        } else {
+            clearInterval(intervalRef.current);
+        }
+    }, [isRunning, intervalRef]);
+    
 
-  useEffect(() => {
-    return () => clearInterval(intervalRef.current);
-  }, []);
-
-  useEffect(() => {
-    if (isRunning) {
-      intervalRef.current = setInterval(() => {
-        setElapsedTime((prevElapsedTime) => prevElapsedTime + 1000);
-      }, 1000);
-    } else {
-      clearInterval(intervalRef.current);
+    function handleStart() {
+        setIsRunning(true);
+        setIsResetDisabled(false);
     }
-  }, [isRunning]);
 
-  const handleStart = () => {
-    setIsRunning(true);
-  };
+    function handlePause() {
+        clearInterval(intervalRef.current);
+        setIsRunning(false);
+        setIsPaused(true);
+    }
 
-  const handlePause = () => {
-    setIsRunning(false);
-  };
+    function handleReset() {
+        clearInterval(intervalRef.current);
+        setTime(0);
+        setIsRunning(false);
+        setIsPaused(false);
+        setIsResetDisabled(true);
+    }
 
-  const handleReset = () => {
-    setElapsedTime(0);
-    setIsRunning(false);
-  };
+    function handleResume() {
+        setIsRunning(true);
+        setIsPaused(false);
+    }
+    const formatTime = (seconds) => {
+        let minutes = Math.floor(seconds / 60);
+        let hours = Math.floor(minutes / 60);
+        let remainingMinutes = minutes % 60;
+        let remainingSeconds = seconds % 60;
+        return `${hours.toString().padStart(2, "0")} : ${remainingMinutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`
+    }
 
-  const formatTime = (time) => {
-    const pad = (num) => String(num).padStart(2, '0');
-    const seconds = pad(Math.floor((time / 1000) % 60));
-    const minutes = pad(Math.floor((time / 1000 / 60) % 60));
-    const hours = pad(Math.floor(time / 1000 / 3600));
-    return `${hours}:${minutes}:${seconds}`;
-  };
-
-  return (
-    <div className="stopwatch">
-      <p id="time" data-testid="time">
-        {formatTime(elapsedTime)}
-      </p>
-      {isRunning ? (
-        <button id="pause" data-testid="pause" onClick={handlePause}>
-          Pause
-        </button>
-      ) : (
-        <button id="start" data-testid="start" onClick={handleStart}>
-          Start
-        </button>
-      )}
-      <button
-        id="reset"
-        data-testid="reset"
-        onClick={handleReset}
-        disabled={!elapsedTime}
-      >
-        Reset
-      </button>
-    </div>
-  );
-};
+    return (
+        <div className="stopwatch-container">
+            <p id="header-text">React Stopwatch</p>
+            <p id="time" data-testid="time" className="time-text">{formatTime(time)}</p>
+            {isRunning ? <button id="pause" data-testid="pause" className="button" onClick={handlePause}>Pause</button>
+                : !isPaused ? <button id="start" data-testid="start" className="button" onClick={handleStart}>Start</button>
+                    : <button id="resume" data-testid="resume" className="button" onClick={handleResume}>Resume</button>}
+            <button id="reset" data-testid="reset" className="button" disabled={isResetDisabled} onClick={handleReset}>Reset</button>
+        </div>
+    );
+}
 
 export default Stopwatch;
